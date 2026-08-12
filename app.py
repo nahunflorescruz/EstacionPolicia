@@ -1,7 +1,8 @@
+```python
 import streamlit as st
-from geopy.distance import great_circle
 import folium
 import pandas as pd
+import math
 from streamlit_folium import st_folium
 
 
@@ -21,6 +22,7 @@ st.set_page_config(
 # ============================================================
 
 st.title("🚔 Buscador de Estaciones de Policía")
+
 st.write(
     "Ingresa tu ubicación para encontrar las estaciones "
     "de policía más cercanas."
@@ -64,6 +66,38 @@ police_stations_honduras = [
 
 
 # ============================================================
+# FUNCIÓN PARA CALCULAR DISTANCIA
+# ============================================================
+
+def calcular_distancia(lat1, lon1, lat2, lon2):
+
+    R = 6371.0
+
+    lat1 = math.radians(lat1)
+    lon1 = math.radians(lon1)
+
+    lat2 = math.radians(lat2)
+    lon2 = math.radians(lon2)
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(lat1)
+        * math.cos(lat2)
+        * math.sin(dlon / 2) ** 2
+    )
+
+    c = 2 * math.atan2(
+        math.sqrt(a),
+        math.sqrt(1 - a)
+    )
+
+    return R * c
+
+
+# ============================================================
 # FUNCIÓN PARA CALCULAR TIEMPO
 # ============================================================
 
@@ -100,6 +134,7 @@ def get_estimated_travel_time(distance_km, mode):
 
 st.sidebar.header("📍 Mi ubicación")
 
+
 latitude = st.sidebar.number_input(
     "Latitud",
     value=14.0833,
@@ -107,6 +142,7 @@ latitude = st.sidebar.number_input(
     max_value=90.0,
     format="%.6f"
 )
+
 
 longitude = st.sidebar.number_input(
     "Longitud",
@@ -147,9 +183,16 @@ buscar = st.sidebar.button(
 
 if buscar:
 
+    # --------------------------------------------------------
+    # UBICACIÓN DEL USUARIO
+    # --------------------------------------------------------
+
+    user_lat = latitude
+    user_lon = longitude
+
     user_coords = (
-        latitude,
-        longitude
+        user_lat,
+        user_lon
     )
 
     station_distances = []
@@ -161,22 +204,17 @@ if buscar:
 
     for station in police_stations_honduras:
 
-        station_coords = (
+        distance = calcular_distancia(
+            user_lat,
+            user_lon,
             station["latitude"],
             station["longitude"]
         )
-
-        distance = great_circle(
-            user_coords,
-            station_coords
-        ).km
-
 
         estimated_time = get_estimated_travel_time(
             distance,
             mode
         )
-
 
         station_distances.append({
 
@@ -217,6 +255,7 @@ if buscar:
     # ========================================================
 
     st.subheader("🚔 Estaciones más cercanas")
+
 
     st.dataframe(
         df,
@@ -277,7 +316,6 @@ if buscar:
         location=user_coords,
 
         zoom_start=14
-
     )
 
 
@@ -300,7 +338,6 @@ if buscar:
             """,
 
             max_width=300
-
         ),
 
         tooltip="Mi ubicación",
@@ -310,7 +347,6 @@ if buscar:
             color="red",
 
             icon="user"
-
         )
 
     ).add_to(mapa)
@@ -376,9 +412,11 @@ if buscar:
         height=600
     )
 
+
 else:
 
     st.info(
         "👈 Introduce tu latitud y longitud "
         "y presiona **Buscar estaciones**."
     )
+```
