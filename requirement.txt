@@ -1,4 +1,5 @@
-ipywidgets
-folium
-geopy
+streamlit
 pandas
+geopy
+folium
+streamlit-folium
