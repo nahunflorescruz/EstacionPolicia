@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 import folium
 import pandas as pd
@@ -419,4 +419,3 @@ else:
         "👈 Introduce tu latitud y longitud "
         "y presiona **Buscar estaciones**."
     )
-```
